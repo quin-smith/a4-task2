@@ -1,0 +1,121 @@
+---
+title: "Juvenile snowshoe hares in Bonanza Creek experimental forest"
+author: "Quin Smith"
+date: "11/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(lubridate)
+library(ggbeeswarm)
+library(ggpubr)
+library(janitor)
+library(broom)
+library(here)
+
+hares <- read_csv(here("data", "bonanza_hares.csv"))
+```
+
+# A. Introduction
+
+
+# B. Data and analyses
+
+
+# C. Exploratory findings
+
+### i. Annual juvenile hare counts
+Creates a count of the total number of juvenile hare trappings across all grid sites by year.
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE}
+hares_year <- hares %>% 
+  mutate(date = mdy(date),
+         year = year(date)) 
+
+count_jhares_yr <- hares_year %>%
+  filter(age == "j") %>% 
+  count(year)
+```
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE, fig.cap="**Figure 1: Total number of juvenile snowshoe hare trappings in Bonanza Creek experimental forest by year, 1999-2012.**  Graph includes trappings from three seperate grid sites: riparian habitat (bonrip), black spruce habitat (bonbs), and mature spruce habitat (bonmat)."}
+ggplot(count_jhares_yr, aes(x = year, y = n)) +
+  geom_col() +
+  scale_x_continuous(breaks = seq(1999, 2012, 1)) +
+  geom_text(aes(label = n, vjust = -0.5), size = 10/.pt) +
+  labs(x = "Year", y = "Juvenile hare trappings") +
+  theme_bw()
+```
+
+```{r, include = FALSE, message = FALSE, warning = FALSE}
+smmry_cntjharesyr <- count_jhares_yr %>% 
+  summarize(mean = mean(n),
+            median = median(n),
+            sd = sd(n),
+            min = min(n),
+            max = max(n))
+```
+
+Discussion:
+There is high variability of the number of juvenile snowshoe hares trapped from 1999 to 2012 (Mean = 31.5, Median = 18.5, SD = 35.88492).  The maximum number of trappings (n = 126) were in 1999 versus the minimum (n = 2) during 2010, not including the years where no juvenile hares were trapped: 1998, 2002, and 2009.  From this preliminary analysis, it is difficult to see any general trends in the data.  The strength of this survey is compromised from a lack of standardization of the number of traps per grid area, the number of survey days per year, the time of year, and the specificity of age of trapped hares.  Moving forward, I would suggest improvements to the experimental design that might include time-series surveys with special attention given to standardizing the number of traps per grid area and specifying age to avoid missing data.  
+
+### ii. Juvenile hare weights
+Creates a plot that compares **juvenile hare weights by sex and grid,** ignoring all other variables. Includes groups where these variables are not recorded (`NA`).
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE}
+hares_sex_grid <- hares %>% 
+  filter(age == "j") %>% 
+  group_by(sex, grid) %>% 
+  summarize(weight_g = weight, na.rm = TRUE)
+
+sex_grid_stats <- hares %>% 
+  filter(age=="j") %>% 
+  group_by(sex, grid) %>% 
+  summarize(mean_weight_g = mean(weight, na.rm = TRUE),
+            sd_weight_g = sd(weight, na.rm = TRUE))
+```
+
+```{r, include = FALSE}
+ggplot(hares_sex_grid, aes(x = weight_g)) +
+  geom_histogram() +
+  facet_wrap(~sex) 
+```
+
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE}
+ggplot(data = hares_sex_grid, aes(x = sex, y = weight_g)) +
+  geom_beeswarm(aes(color = sex)) +
+  facet_wrap(~grid) +
+  geom_boxplot(fill = NA) +
+  stat_summary(fun=mean, 
+               geom="point", 
+               shape=20, 
+               size=4, 
+               color="black", 
+               fill="black") +
+  theme_minimal()
+               
+  
+```
+
+# D. Summary
+
+
+### E. Citations
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
